@@ -285,29 +285,27 @@ class Vanilla(
   override fun getSnapshots(params: Parameters): List<AmazonSnapshot> {
     val account: SpinnakerAccount = findAccount(params) ?: return emptyList()
     val snapshots = mutableListOf<AmazonSnapshot>()
-    val request = DescribeSnapshotsRequest()
-      .withMaxResults(snapshotsMaxResult)
-      .withFilters(Filter("is-public").withValues("false"))
-    var result: DescribeSnapshotsResult = account.ec2(params.region)
-      .describeSnapshots(request)
-
-    snapshots.addAll(
-      convert(result.snapshots)
-    )
-
-    var nextToken = result.nextToken
-    while (!nextToken.isNullOrBlank()) {
-      request.nextToken = nextToken
-      result = account.ec2(params.region)
+    imageFilters.forEach {
+      log.info("Getting Snapshots with filter {}", it)
+      val request = DescribeSnapshotsRequest()
+        .withMaxResults(snapshotsMaxResult)
+        .withFilters(Filter("is-public").withValues("false"))
+      var result: DescribeSnapshotsResult = account.ec2(params.region)
         .describeSnapshots(request)
 
-      snapshots.addAll(
-        convert(result.snapshots)
-      )
+      snapshots.addAll(convert(result.snapshots))
 
-      nextToken = result.nextToken
+      var nextToken = result.nextToken
+      while (!nextToken.isNullOrBlank()) {
+        request.nextToken = nextToken
+        result = account.ec2(params.region)
+          .describeSnapshots(request)
+
+        snapshots.addAll(convert(result.snapshots))
+
+        nextToken = result.nextToken
     }
-
+  }
     return snapshots
   }
 
