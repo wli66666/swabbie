@@ -288,7 +288,6 @@ class Vanilla(
     val request = DescribeSnapshotsRequest()
       .withMaxResults(snapshotsMaxResult)
       .withFilters(Filter("is-public").withValues("false"))
-      .withFilters(it)
     var result: DescribeSnapshotsResult = account.ec2(params.region)
       .describeSnapshots(request)
 
