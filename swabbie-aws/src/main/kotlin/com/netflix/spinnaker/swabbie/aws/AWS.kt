@@ -285,7 +285,10 @@ class Vanilla(
   override fun getSnapshots(params: Parameters): List<AmazonSnapshot> {
     val account: SpinnakerAccount = findAccount(params) ?: return emptyList()
     val snapshots = mutableListOf<AmazonSnapshot>()
-    val request = DescribeSnapshotsRequest().withMaxResults(snapshotsMaxResult)
+    val request = DescribeSnapshotsRequest()
+      .withMaxResults(snapshotsMaxResult)
+      .withFilters(Filter("is-public").withValues("false"))
+      .withFilters(it)
     var result: DescribeSnapshotsResult = account.ec2(params.region)
       .describeSnapshots(request)
 
